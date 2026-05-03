@@ -1,0 +1,30 @@
+# Dependencies
+frontend/node_modules/
+backend/__pycache__/
+backend/rag/__pycache__/
+
+# Vector store (generated at runtime)
+backend/chroma_db/
+
+# Environment
+backend/.env
+.env
+
+# Build outputs
+frontend/dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Python
+*.pyc
+*.pyo
+__pycache__/
+*.egg-info/
+venv/
+.venv/
