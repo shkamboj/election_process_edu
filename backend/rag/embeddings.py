@@ -13,9 +13,9 @@ CHROMA_DIR = pathlib.Path(__file__).resolve().parent.parent / "chroma_db"
 
 
 def _get_embedding_function():
-    return embedding_functions.OpenAIEmbeddingFunction(
-        api_key=os.getenv("OPENAI_API_KEY", ""),
-        model_name="text-embedding-3-small",
+    return embedding_functions.GoogleGenerativeAiEmbeddingFunction(
+        api_key=os.getenv("GOOGLE_API_KEY", ""),
+        model_name="models/text-embedding-004",
     )
 
 

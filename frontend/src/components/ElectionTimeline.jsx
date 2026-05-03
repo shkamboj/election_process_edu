@@ -104,20 +104,20 @@ const STEPS = [
 
 export default function ElectionTimeline() {
   return (
-    <div>
+    <section aria-label="Election timeline">
       <h2 className="text-lg font-bold text-navy mb-6">
         Election Timeline — From Announcement to Government
       </h2>
 
-      <div className="relative">
+      <ol className="relative list-none p-0" role="list">
         {/* Vertical line */}
-        <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+        <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200" aria-hidden="true"></div>
 
         {STEPS.map((phase, pi) => (
-          <div key={pi} className="mb-8">
+          <li key={pi} className="mb-8" aria-label={`Phase ${pi + 1}: ${phase.phase}`}>
             {/* Phase header */}
             <div className="flex items-center gap-3 mb-4 relative z-10">
-              <div className={`w-8 h-8 rounded-full ${phase.color} flex items-center justify-center text-white text-xs font-bold`}>
+              <div className={`w-8 h-8 rounded-full ${phase.color} flex items-center justify-center text-white text-xs font-bold`} aria-hidden="true">
                 {pi + 1}
               </div>
               <h3 className="font-semibold text-gray-800">{phase.phase}</h3>
@@ -132,7 +132,7 @@ export default function ElectionTimeline() {
                 >
                   <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-gray-700 hover:text-navy list-none flex items-center justify-between">
                     {step.title}
-                    <span className="text-gray-400 group-open:rotate-180 transition-transform">
+                    <span className="text-gray-400 group-open:rotate-180 transition-transform" aria-hidden="true">
                       ▾
                     </span>
                   </summary>
@@ -142,9 +142,9 @@ export default function ElectionTimeline() {
                 </details>
               ))}
             </div>
-          </div>
+          </li>
         ))}
-      </div>
-    </div>
+      </ol>
+    </section>
   );
 }

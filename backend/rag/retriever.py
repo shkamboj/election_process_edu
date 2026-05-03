@@ -1,10 +1,11 @@
-"""Retriever: combines RAG context with OpenAI chat completion."""
+"""Retriever: combines RAG context with Google Gemini chat completion."""
 
 from __future__ import annotations
 
 import os
+from functools import lru_cache
 
-from openai import OpenAI
+import google.generativeai as genai
 
 from .embeddings import query as vector_query
 
@@ -21,6 +22,24 @@ Rules:
 """
 
 
+@lru_cache(maxsize=128)
+def _cached_generate(question: str, context_text: str) -> str:
+    """Cache Gemini responses for identical question+context pairs."""
+    prompt = f"Context from knowledge base:\n\n{context_text}\n\n---\n\nUser question: {question}"
+
+    genai.configure(api_key=os.getenv("GOOGLE_API_KEY", ""))
+    model = genai.GenerativeModel(
+        model_name="gemini-2.0-flash",
+        system_instruction=SYSTEM_PROMPT,
+        generation_config=genai.GenerationConfig(
+            temperature=0.3,
+            max_output_tokens=1024,
+        ),
+    )
+    response = model.generate_content(prompt)
+    return response.text
+
+
 def retrieve_and_answer(question: str) -> dict:
     """Retrieve relevant context from the knowledge base and generate an answer."""
     # Step 1: Retrieve relevant chunks
@@ -28,23 +47,7 @@ def retrieve_and_answer(question: str) -> dict:
     context_text = "\n\n---\n\n".join(h["text"] for h in hits)
     sources = list({h["source"] for h in hits})
 
-    # Step 2: Build messages
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {
-            "role": "user",
-            "content": f"Context from knowledge base:\n\n{context_text}\n\n---\n\nUser question: {question}",
-        },
-    ]
+    # Step 2: Generate (with caching)
+    answer = _cached_generate(question, context_text)
 
-    # Step 3: Call OpenAI
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=messages,
-        temperature=0.3,
-        max_tokens=1024,
-    )
-
-    answer = response.choices[0].message.content
     return {"answer": answer, "sources": sources}

@@ -68,9 +68,9 @@ export default function Chat() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-180px)]">
+    <section className="flex flex-col h-[calc(100vh-180px)]" aria-label="Chat with election assistant">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto space-y-4 pb-4">
+      <div className="flex-1 overflow-y-auto space-y-4 pb-4" role="log" aria-live="polite" aria-label="Chat messages">
         {messages.length === 0 && (
           <div className="text-center py-12">
             <p className="text-4xl mb-4">🇮🇳</p>
@@ -123,9 +123,9 @@ export default function Chat() {
         ))}
 
         {loading && (
-          <div className="flex justify-start">
+          <div className="flex justify-start" role="status" aria-label="Loading response">
             <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
-              <div className="flex gap-1">
+              <div className="flex gap-1" aria-hidden="true">
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]"></span>
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]"></span>
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]"></span>
@@ -138,26 +138,32 @@ export default function Chat() {
       </div>
 
       {/* Input */}
-      <div className="border-t bg-white pt-3">
+      <form className="border-t bg-white pt-3" onSubmit={(e) => { e.preventDefault(); sendMessage(); }} role="search" aria-label="Ask a question">
         <div className="flex gap-2">
+          <label htmlFor="chat-input" className="sr-only">Ask about the Indian election process</label>
           <input
+            id="chat-input"
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask about the Indian election process…"
-            className="flex-1 border border-gray-300 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:border-saffron focus:ring-1 focus:ring-saffron"
+            className="flex-1 border border-gray-300 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:border-saffron focus:ring-2 focus:ring-saffron"
             disabled={loading}
+            autoComplete="off"
+            aria-describedby="chat-hint"
           />
           <button
-            onClick={() => sendMessage()}
+            type="submit"
             disabled={loading || !input.trim()}
-            className="bg-navy text-white rounded-full px-6 py-2.5 text-sm font-medium hover:bg-blue-900 disabled:opacity-40 transition-colors"
+            aria-label="Submit question"
+            className="bg-navy text-white rounded-full px-6 py-2.5 text-sm font-medium hover:bg-blue-900 disabled:opacity-40 transition-colors focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-2"
           >
             Ask
           </button>
         </div>
-      </div>
-    </div>
+        <p id="chat-hint" className="sr-only">Press Enter to submit your question</p>
+      </form>
+    </section>
   );
 }
