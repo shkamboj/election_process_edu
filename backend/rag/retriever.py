@@ -12,42 +12,62 @@ from .embeddings import query as vector_query
 # Configure Gemini once at module level
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY", ""))
 
-_model = genai.GenerativeModel(
-    model_name="gemini-2.0-flash",
-    system_instruction="""You are an expert assistant on the Indian election process. Your role is to help users understand how elections work in India — including the Election Commission, types of elections, voter registration, the voting process, EVMs, VVPAT, Model Code of Conduct, election timelines, key legislation, and post-election procedures.
+COUNTRY_NAMES = {
+    "india": "India",
+    "usa": "United States",
+    "indonesia": "Indonesia",
+    "brazil": "Brazil",
+    "pakistan": "Pakistan",
+    "nigeria": "Nigeria",
+    "bangladesh": "Bangladesh",
+    "japan": "Japan",
+    "mexico": "Mexico",
+    "philippines": "Philippines",
+}
+
+_BASE_SYSTEM_PROMPT = """You are an expert assistant on the election process of {country}. Your role is to help users understand how elections work in {country}.
 
 Rules:
 - Answer based ONLY on the provided context. If the context does not contain enough information, say so honestly.
 - Be clear, concise, and educational. Use simple language suitable for first-time voters and students.
 - When citing steps or processes, use numbered lists for clarity.
-- If the user asks about a specific state, mention that state-level rules may vary and suggest checking the State Election Commission website.
 - Do not provide personal opinions or political bias. Remain neutral and factual.
-- When relevant, mention official resources like eci.gov.in, voters.eci.gov.in, or the Voter Helpline (1950).
-- Use Indian English spelling conventions.
-""",
-    generation_config=genai.GenerationConfig(
-        temperature=0.3,
-        max_output_tokens=1024,
-    ),
-)
+- When relevant, mention official election body websites or helplines for {country}.
+"""
+
+_models: dict = {}
+
+
+def _get_model(country: str):
+    """Get or create a model for a given country."""
+    if country not in _models:
+        country_name = COUNTRY_NAMES.get(country, country.title())
+        _models[country] = genai.GenerativeModel(
+            model_name="gemini-2.0-flash",
+            system_instruction=_BASE_SYSTEM_PROMPT.format(country=country_name),
+            generation_config=genai.GenerationConfig(
+                temperature=0.3,
+                max_output_tokens=1024,
+            ),
+        )
+    return _models[country]
 
 
 @lru_cache(maxsize=128)
-def _cached_generate(question: str, context_text: str) -> str:
-    """Cache Gemini responses for identical question+context pairs."""
+def _cached_generate(question: str, context_text: str, country: str) -> str:
+    """Cache Gemini responses for identical question+context+country."""
     prompt = f"Context from knowledge base:\n\n{context_text}\n\n---\n\nUser question: {question}"
-    response = _model.generate_content(prompt)
+    model = _get_model(country)
+    response = model.generate_content(prompt)
     return response.text
 
 
-def retrieve_and_answer(question: str) -> dict:
+def retrieve_and_answer(question: str, country: str = "india") -> dict:
     """Retrieve relevant context from the knowledge base and generate an answer."""
-    # Step 1: Retrieve relevant chunks
     hits = vector_query(question, n_results=5)
     context_text = "\n\n---\n\n".join(h["text"] for h in hits)
     sources = list({h["source"] for h in hits})
 
-    # Step 2: Generate (with caching)
-    answer = _cached_generate(question, context_text)
+    answer = _cached_generate(question, context_text, country)
 
     return {"answer": answer, "sources": sources}

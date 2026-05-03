@@ -3,9 +3,9 @@ import { describe, it, expect } from 'vitest';
 import App from '../App';
 
 describe('App', () => {
-  it('renders the header title', () => {
+  it('renders the header title with India as default', () => {
     render(<App />);
-    expect(screen.getByText('Indian Election Process')).toBeInTheDocument();
+    expect(screen.getByText('India Election Process')).toBeInTheDocument();
   });
 
   it('renders all three navigation tabs', () => {
@@ -18,7 +18,7 @@ describe('App', () => {
   it('defaults to Timeline tab', async () => {
     render(<App />);
     await waitFor(() => {
-      expect(screen.getByText('Election Timeline — From Announcement to Government')).toBeInTheDocument();
+      expect(screen.getByText('India Election Timeline')).toBeInTheDocument();
     });
   });
 
@@ -34,12 +34,38 @@ describe('App', () => {
     render(<App />);
     fireEvent.click(screen.getByRole('tab', { name: 'Ask' }));
     await waitFor(() => {
-      expect(screen.getByText('Ask anything about Indian elections')).toBeInTheDocument();
+      expect(screen.getByText('Ask anything about India elections')).toBeInTheDocument();
     });
   });
 
   it('renders the footer disclaimer', () => {
     render(<App />);
     expect(screen.getByText(/Educational purposes only/)).toBeInTheDocument();
+  });
+
+  it('renders country selector button', () => {
+    render(<App />);
+    expect(screen.getByRole('button', { name: /Select country/ })).toBeInTheDocument();
+  });
+
+  it('opens country selector and shows all 10 countries', async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /Select country/ }));
+    await waitFor(() => {
+      expect(screen.getByRole('listbox', { name: 'Select a country' })).toBeInTheDocument();
+    });
+    expect(screen.getByText('United States')).toBeInTheDocument();
+    expect(screen.getByText('Brazil')).toBeInTheDocument();
+    expect(screen.getByText('Japan')).toBeInTheDocument();
+  });
+
+  it('changes country when a different one is selected', async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /Select country/ }));
+    await waitFor(() => {
+      expect(screen.getByRole('listbox')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('United States'));
+    expect(screen.getByText('United States Election Process')).toBeInTheDocument();
   });
 });

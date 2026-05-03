@@ -101,6 +101,7 @@ MAX_QUESTION_LENGTH = 500
 
 class AskRequest(BaseModel):
     question: str
+    country: str = "india"
 
     @field_validator("question")
     @classmethod
@@ -146,7 +147,7 @@ def index_knowledge(request: Request):
 def ask(req: AskRequest, request: Request):
     """Answer a question about the Indian election process."""
     _check_api_key()
-    result = retrieve_and_answer(req.question)
+    result = retrieve_and_answer(req.question, country=req.country)
     return AskResponse(**result)
 
 

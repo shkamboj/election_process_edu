@@ -1,16 +1,9 @@
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import ReactMarkdown from 'react-markdown';
+import SUGGESTIONS_BY_COUNTRY from '../data/suggestions';
 
-const SUGGESTIONS = [
-  'How do I register to vote in India?',
-  'What is the role of the Election Commission?',
-  'How does an EVM work?',
-  'Explain the election timeline step by step',
-  'What is NOTA and how does it work?',
-  'What is the Model Code of Conduct?',
-];
-
-export default memo(function Chat() {
+export default memo(function Chat({ country }) {
+  const suggestions = SUGGESTIONS_BY_COUNTRY[country.id] || SUGGESTIONS_BY_COUNTRY.india;
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -33,7 +26,7 @@ export default memo(function Chat() {
       const res = await fetch('/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({ question: q, country: country.id }),
       });
 
       if (!res.ok) {
@@ -58,7 +51,7 @@ export default memo(function Chat() {
     } finally {
       setLoading(false);
     }
-  }, [input, loading]);
+  }, [input, loading, country]);
 
   const handleKeyDown = useCallback(function handleKeyDown(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -68,24 +61,24 @@ export default memo(function Chat() {
   }, [sendMessage]);
 
   return (
-    <section className="flex flex-col h-[calc(100vh-180px)]" aria-label="Chat with election assistant">
+    <section className="flex flex-col h-[calc(100vh-180px)]" aria-label={`Chat with ${country.name} election assistant`}>
       {/* Messages */}
       <div className="flex-1 overflow-y-auto space-y-4 pb-4" role="log" aria-live="polite" aria-label="Chat messages">
         {messages.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-4xl mb-4">🇮🇳</p>
+            <p className="text-4xl mb-4">{country.flag}</p>
             <h2 className="text-lg font-semibold text-gray-700 mb-2">
-              Ask anything about Indian elections
+              Ask anything about {country.name} elections
             </h2>
             <p className="text-sm text-gray-500 mb-6">
-              Voter registration, EVMs, election process, timelines, and more
+              Election process, voter registration, timelines, legislation, and more
             </p>
             <div className="flex flex-wrap justify-center gap-2">
-              {SUGGESTIONS.map((s) => (
+              {suggestions.map((s) => (
                 <button
                   key={s}
                   onClick={() => sendMessage(s)}
-                  className="bg-white border border-gray-200 rounded-full px-4 py-2 text-sm text-gray-700 hover:border-saffron hover:text-saffron transition-colors"
+                  className="bg-white border border-gray-200 rounded-full px-4 py-2 text-sm text-gray-700 hover:border-blue-400 hover:text-blue-600 transition-colors"
                 >
                   {s}
                 </button>
@@ -103,9 +96,10 @@ export default memo(function Chat() {
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                 msg.role === 'user'
-                  ? 'bg-navy text-white rounded-br-sm'
+                  ? 'text-white rounded-br-sm'
                   : 'bg-white border border-gray-200 shadow-sm rounded-bl-sm'
               }`}
+              style={msg.role === 'user' ? { backgroundColor: country.accent } : undefined}
             >
               {msg.role === 'assistant' ? (
                 <div className="prose text-sm">
@@ -141,15 +135,16 @@ export default memo(function Chat() {
       {/* Input */}
       <form className="border-t bg-white pt-3" onSubmit={(e) => { e.preventDefault(); sendMessage(); }} role="search" aria-label="Ask a question">
         <div className="flex gap-2">
-          <label htmlFor="chat-input" className="sr-only">Ask about the Indian election process</label>
+          <label htmlFor="chat-input" className="sr-only">Ask about the {country.name} election process</label>
           <input
             id="chat-input"
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about the Indian election process…"
-            className="flex-1 border border-gray-300 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:border-saffron focus:ring-2 focus:ring-saffron"
+            placeholder={`Ask about the ${country.name} election process…`}
+            className="flex-1 border border-gray-300 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2"
+            style={{ '--tw-ring-color': country.accent }}
             disabled={loading}
             autoComplete="off"
             aria-describedby="chat-hint"
@@ -158,7 +153,8 @@ export default memo(function Chat() {
             type="submit"
             disabled={loading || !input.trim()}
             aria-label="Submit question"
-            className="bg-navy text-white rounded-full px-6 py-2.5 text-sm font-medium hover:bg-blue-900 disabled:opacity-40 transition-colors focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-2"
+            className="text-white rounded-full px-6 py-2.5 text-sm font-medium disabled:opacity-40 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+            style={{ backgroundColor: country.accent, '--tw-ring-color': country.accent }}
           >
             Ask
           </button>

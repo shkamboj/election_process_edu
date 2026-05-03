@@ -73,7 +73,7 @@ class TestAskEndpoint:
         assert "sources" in data
         assert "Electronic Voting Machine" in data["answer"]
         assert "evm_vvpat" in data["sources"]
-        mock_rag.assert_called_once_with("What is an EVM?")
+        mock_rag.assert_called_once_with("What is an EVM?", country="india")
 
     @patch("main.retrieve_and_answer")
     @patch.dict("os.environ", {"GOOGLE_API_KEY": "test-key-12345"})
@@ -227,25 +227,34 @@ class TestInputValidation:
         response = client.post("/ask", json={"question": "../../etc/passwd"})
         assert response.status_code in (200, 500, 503)
 
+    @patch("main.retrieve_and_answer")
+    @patch.dict("os.environ", {"GOOGLE_API_KEY": "test-key-12345"})
+    def test_ask_with_country_param(self, mock_rag):
+        """Test /ask with an explicit country parameter."""
+        mock_rag.return_value = {"answer": "The Electoral College has 538 electors.", "sources": ["usa_elections"]}
+        response = client.post("/ask", json={"question": "How does voting work?", "country": "usa"})
+        assert response.status_code == 200
+        mock_rag.assert_called_once_with("How does voting work?", country="usa")
+
 
 # --- Retriever tests (mocked) ---
 
 class TestRetriever:
     @patch("rag.retriever.vector_query")
-    @patch("rag.retriever._model")
-    def test_retrieve_and_answer_structure(self, mock_model, mock_vquery):
+    @patch("rag.retriever._get_model")
+    def test_retrieve_and_answer_structure(self, mock_get_model, mock_vquery):
         """Test the RAG pipeline returns correct structure."""
         mock_vquery.return_value = [
             {"text": "EVMs are used in India.", "source": "evm_vvpat", "distance": 0.1},
             {"text": "Voting process step by step.", "source": "voting_process", "distance": 0.2},
         ]
+        mock_model = MagicMock()
         mock_response = MagicMock()
         mock_response.text = "EVMs are electronic devices used for voting in Indian elections."
         mock_model.generate_content.return_value = mock_response
+        mock_get_model.return_value = mock_model
 
-        from rag.retriever import retrieve_and_answer
-        # Clear lru_cache to ensure our mock is used
-        from rag.retriever import _cached_generate
+        from rag.retriever import retrieve_and_answer, _cached_generate
         _cached_generate.cache_clear()
 
         result = retrieve_and_answer("What is an EVM?")

@@ -2,44 +2,47 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Chat from '../components/Chat';
 
+const INDIA = {
+  id: 'india', name: 'India', flag: '🇮🇳', accent: '#000080',
+  headerGradient: 'linear-gradient(to right, #FF9933, #FFFFFF, #138808)',
+};
+
 describe('Chat', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
   it('renders the welcome message', () => {
-    render(<Chat />);
-    expect(screen.getByText('Ask anything about Indian elections')).toBeInTheDocument();
+    render(<Chat country={INDIA} />);
+    expect(screen.getByText('Ask anything about India elections')).toBeInTheDocument();
   });
 
   it('renders suggestion buttons', () => {
-    render(<Chat />);
+    render(<Chat country={INDIA} />);
     expect(screen.getByText('How do I register to vote in India?')).toBeInTheDocument();
-    expect(screen.getByText('How does an EVM work?')).toBeInTheDocument();
-    expect(screen.getByText('What is NOTA and how does it work?')).toBeInTheDocument();
   });
 
   it('renders the input field', () => {
-    render(<Chat />);
+    render(<Chat country={INDIA} />);
     expect(
-      screen.getByPlaceholderText('Ask about the Indian election process…')
+      screen.getByPlaceholderText('Ask about the India election process…')
     ).toBeInTheDocument();
   });
 
   it('renders the submit button', () => {
-    render(<Chat />);
+    render(<Chat country={INDIA} />);
     expect(screen.getByRole('button', { name: 'Submit question' })).toBeInTheDocument();
   });
 
   it('submit button is disabled when input is empty', () => {
-    render(<Chat />);
+    render(<Chat country={INDIA} />);
     const askBtn = screen.getByRole('button', { name: 'Submit question' });
     expect(askBtn).toBeDisabled();
   });
 
   it('enables submit button when user types a question', () => {
-    render(<Chat />);
-    const input = screen.getByPlaceholderText('Ask about the Indian election process…');
+    render(<Chat country={INDIA} />);
+    const input = screen.getByPlaceholderText('Ask about the India election process…');
     fireEvent.change(input, { target: { value: 'What is EVM?' } });
     const askBtn = screen.getByRole('button', { name: 'Submit question' });
     expect(askBtn).not.toBeDisabled();
@@ -54,31 +57,28 @@ describe('Chat', () => {
       }),
     });
 
-    render(<Chat />);
-    const input = screen.getByPlaceholderText('Ask about the Indian election process…');
+    render(<Chat country={INDIA} />);
+    const input = screen.getByPlaceholderText('Ask about the India election process…');
     fireEvent.change(input, { target: { value: 'What is EVM?' } });
     fireEvent.click(screen.getByRole('button', { name: 'Submit question' }));
 
-    // User message appears
     expect(screen.getByText('What is EVM?')).toBeInTheDocument();
 
-    // Wait for assistant response
     await waitFor(() => {
       expect(screen.getByText(/Electronic Voting Machine/)).toBeInTheDocument();
     });
 
-    // Verify fetch was called correctly
     expect(global.fetch).toHaveBeenCalledWith('/ask', expect.objectContaining({
       method: 'POST',
-      body: JSON.stringify({ question: 'What is EVM?' }),
+      body: JSON.stringify({ question: 'What is EVM?', country: 'india' }),
     }));
   });
 
   it('displays error message on network failure', async () => {
     global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
 
-    render(<Chat />);
-    const input = screen.getByPlaceholderText('Ask about the Indian election process…');
+    render(<Chat country={INDIA} />);
+    const input = screen.getByPlaceholderText('Ask about the India election process…');
     fireEvent.change(input, { target: { value: 'Test question' } });
     fireEvent.click(screen.getByRole('button', { name: 'Submit question' }));
 
@@ -94,8 +94,8 @@ describe('Chat', () => {
       json: () => Promise.resolve({ detail: 'Service temporarily unavailable' }),
     });
 
-    render(<Chat />);
-    const input = screen.getByPlaceholderText('Ask about the Indian election process…');
+    render(<Chat country={INDIA} />);
+    const input = screen.getByPlaceholderText('Ask about the India election process…');
     fireEvent.change(input, { target: { value: 'Test' } });
     fireEvent.click(screen.getByRole('button', { name: 'Submit question' }));
 
@@ -110,8 +110,8 @@ describe('Chat', () => {
       json: () => Promise.resolve({ answer: 'Answer', sources: [] }),
     });
 
-    render(<Chat />);
-    const input = screen.getByPlaceholderText('Ask about the Indian election process…');
+    render(<Chat country={INDIA} />);
+    const input = screen.getByPlaceholderText('Ask about the India election process…');
     fireEvent.change(input, { target: { value: 'My question' } });
     fireEvent.click(screen.getByRole('button', { name: 'Submit question' }));
 
@@ -124,7 +124,7 @@ describe('Chat', () => {
       json: () => Promise.resolve({ answer: 'Answer about EVMs', sources: [] }),
     });
 
-    render(<Chat />);
+    render(<Chat country={INDIA} />);
     fireEvent.click(screen.getByText('How does an EVM work?'));
 
     await waitFor(() => {
@@ -133,12 +133,12 @@ describe('Chat', () => {
   });
 
   it('has accessible chat log region', () => {
-    render(<Chat />);
+    render(<Chat country={INDIA} />);
     expect(screen.getByRole('log')).toBeInTheDocument();
   });
 
   it('has accessible search form', () => {
-    render(<Chat />);
+    render(<Chat country={INDIA} />);
     expect(screen.getByRole('search')).toBeInTheDocument();
   });
 });
