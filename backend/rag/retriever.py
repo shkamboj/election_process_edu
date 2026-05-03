@@ -10,8 +10,18 @@ from google.genai import types
 
 from .embeddings import query as vector_query
 
-# Configure Gemini client once at module level
-_client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY", ""))
+# Configure Gemini client lazily — avoids crash when API key is missing at import time
+_client = None
+
+
+def _get_client() -> genai.Client:
+    global _client
+    if _client is None:
+        api_key = os.getenv("GOOGLE_API_KEY", "")
+        if not api_key:
+            raise ValueError("GOOGLE_API_KEY is not configured.")
+        _client = genai.Client(api_key=api_key)
+    return _client
 
 COUNTRY_NAMES = {
     "india": "India",
@@ -50,7 +60,7 @@ def _make_config(country: str) -> types.GenerateContentConfig:
 def _cached_generate(question: str, context_text: str, country: str) -> str:
     """Cache Gemini responses for identical question+context+country."""
     prompt = f"Context from knowledge base:\n\n{context_text}\n\n---\n\nUser question: {question}"
-    response = _client.models.generate_content(
+    response = _get_client().models.generate_content(
         model="gemini-2.0-flash",
         contents=prompt,
         config=_make_config(country),

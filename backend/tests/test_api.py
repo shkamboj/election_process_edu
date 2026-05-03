@@ -287,16 +287,18 @@ class TestInputValidation:
 
 class TestRetriever:
     @patch("rag.retriever.vector_query")
-    @patch("rag.retriever._client")
-    def test_retrieve_and_answer_structure(self, mock_client, mock_vquery):
+    @patch("rag.retriever._get_client")
+    def test_retrieve_and_answer_structure(self, mock_get_client, mock_vquery):
         """Test the RAG pipeline returns correct structure."""
         mock_vquery.return_value = [
             {"text": "EVMs are used in India.", "source": "evm_vvpat", "distance": 0.1},
             {"text": "Voting process step by step.", "source": "voting_process", "distance": 0.2},
         ]
+        mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.text = "EVMs are electronic devices used for voting in Indian elections."
         mock_client.models.generate_content.return_value = mock_response
+        mock_get_client.return_value = mock_client
 
         from rag.retriever import retrieve_and_answer, _cached_generate
         _cached_generate.cache_clear()
