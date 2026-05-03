@@ -1,7 +1,8 @@
 import { memo } from 'react';
+import PropTypes from 'prop-types';
 import TOPICS_BY_COUNTRY from '../data/topics';
 
-export default memo(function TopicCards({ country }) {
+function TopicCards({ country }) {
   const topics = TOPICS_BY_COUNTRY[country.id] || TOPICS_BY_COUNTRY.india;
 
   return (
@@ -33,4 +34,14 @@ export default memo(function TopicCards({ country }) {
       </div>
     </section>
   );
-});
+}
+
+TopicCards.propTypes = {
+  country: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    accent: PropTypes.string.isRequired,
+  }).isRequired,
+};
+
+export default memo(TopicCards);

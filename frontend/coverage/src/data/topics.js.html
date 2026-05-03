@@ -1,0 +1,496 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/data/topics.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/data</a> topics.js</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>1/1</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/0</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>0/0</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>1/1</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line high'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a>
+<a name='L131'></a><a href='#L131'>131</a>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a>
+<a name='L136'></a><a href='#L136'>136</a>
+<a name='L137'></a><a href='#L137'>137</a>
+<a name='L138'></a><a href='#L138'>138</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
+ * Topic cards for the 10 largest democracies.
+ */
+&nbsp;
+const TOPICS_BY_COUNTRY = {
+  india: [
+    { emoji: '🏛️', title: 'Indian Democracy Basics', summary: 'Parliamentary system, Constitution (Part XV, Articles 324–329), universal adult suffrage, Lok Sabha &amp; Rajya Sabha.' },
+    { emoji: '⚖️', title: 'Election Commission of India', summary: 'Autonomous constitutional body — CEC, election commissioners, SVEEP, cVIGIL, and Voter Helpline 1950.' },
+    { emoji: '🗳️', title: 'Types of Elections', summary: 'Lok Sabha, Rajya Sabha, State Assembly, Local Body, Presidential, By-Elections — FPTP &amp; STV systems.' },
+    { emoji: '📋', title: 'Voter Registration', summary: 'Eligibility (18+), Form 6 on NVSP portal, EPIC/Voter ID, e-EPIC, NRI voting, and the Voter Helpline app.' },
+    { emoji: '📅', title: 'Election Timeline', summary: 'Announcement → Nomination → Scrutiny → Withdrawal → Campaigning → Silence Period → Polling → Counting → Government Formation.' },
+    { emoji: '🖲️', title: 'EVM &amp; VVPAT', summary: 'How Electronic Voting Machines work, M3 EVMs, VVPAT paper trail, ballot unit &amp; control unit, security features.' },
+    { emoji: '🗓️', title: 'Voting Process', summary: 'Step-by-step polling day guide — ID check, indelible ink, casting vote on EVM, VVPAT verification, postal ballots.' },
+    { emoji: '📜', title: 'Model Code of Conduct', summary: 'Rules for parties and government during elections — campaign restrictions, monitoring, enforcement, cVIGIL app.' },
+    { emoji: '🏆', title: 'Post-Election Process', summary: 'Counting procedure, election petitions, recounts, government formation, coalition politics, transition of power.' },
+    { emoji: '📖', title: 'Key Legislation', summary: 'RPA 1950 &amp; 1951, Anti-Defection Law (10th Schedule), Delimitation Act, Constitutional Amendments on elections.' },
+  ],
+&nbsp;
+  usa: [
+    { emoji: '🏛️', title: 'Constitutional Framework', summary: 'Article II (Executive), 12th Amendment (Electoral College), 15th/19th/26th Amendments (voting rights expansion).' },
+    { emoji: '🗳️', title: 'Electoral College', summary: '538 electors, 270 to win. Winner-take-all in 48 states. Maine and Nebraska use congressional district method.' },
+    { emoji: '🏗️', title: 'Federal vs State Elections', summary: 'Federal (President, Congress), State (Governor, Legislature), Local (Mayor, School Board). Decentralized administration.' },
+    { emoji: '📋', title: 'Voter Registration', summary: 'State-by-state rules. Motor Voter Act, online registration, same-day registration in some states. Voter ID laws vary.' },
+    { emoji: '🗓️', title: 'Primary System', summary: 'Open vs closed primaries, caucuses, Super Tuesday, delegate allocation, contested conventions.' },
+    { emoji: '💰', title: 'Campaign Finance', summary: 'FEC regulation, PACs, Super PACs, Citizens United ruling, individual contribution limits, public financing.' },
+    { emoji: '📊', title: 'Voting Methods', summary: 'Paper ballots, optical scan, DRE machines, mail-in voting, early voting, provisional ballots.' },
+    { emoji: '⚖️', title: 'Voting Rights', summary: 'Voting Rights Act of 1965, gerrymandering, voter suppression concerns, felony disenfranchisement.' },
+    { emoji: '🏆', title: 'Post-Election Process', summary: 'Electoral vote certification, January 6 joint session, presidential transition, inauguration.' },
+    { emoji: '📖', title: 'Key Legislation', summary: 'Help America Vote Act, National Voter Registration Act, Electoral Count Reform Act.' },
+  ],
+&nbsp;
+  indonesia: [
+    { emoji: '🏛️', title: 'Pancasila Democracy', summary: 'Unitary republic, presidential system, Pancasila ideology, 1945 Constitution (UUD 1945), Reformasi era changes.' },
+    { emoji: '⚖️', title: 'KPU &amp; Bawaslu', summary: 'General Elections Commission (KPU) administers elections. Bawaslu supervises. Both are independent bodies.' },
+    { emoji: '🗳️', title: 'Simultaneous Elections', summary: 'Since 2019: President, DPR (parliament), DPD (senate), provincial &amp; district legislatures — all on one day.' },
+    { emoji: '📋', title: 'Voter Registration', summary: 'Automatic registration from civil registry. KPU updates voter list (DPT). KTP (national ID) used for verification.' },
+    { emoji: '📅', title: 'Election Timeline', summary: 'Schedule set by KPU → party registration → campaigns → quiet period → voting → counting → Constitutional Court disputes.' },
+    { emoji: '📝', title: 'Paper Ballot System', summary: 'Paper ballots with nail-punch method. Manual counting at polling stations. Massive logistics across 17,000+ islands.' },
+    { emoji: '🗓️', title: 'Campaign Rules', summary: '75-day campaign period. Bawaslu monitors compliance. Social media regulation for political ads.' },
+    { emoji: '📜', title: 'Electoral Thresholds', summary: '4% parliamentary threshold. Presidential candidates need 20% DPR seats or 25% popular vote for nomination.' },
+    { emoji: '🏆', title: 'Results &amp; Disputes', summary: 'KPU tabulates within 35 days. Disputes go to Constitutional Court (MK). Quick counts by independent pollsters.' },
+    { emoji: '📖', title: 'Key Legislation', summary: 'Law No. 7/2017 on Elections, Constitutional Court rulings on simultaneous elections and thresholds.' },
+  ],
+&nbsp;
+  brazil: [
+    { emoji: '🏛️', title: 'Federal Republic', summary: 'Presidential system, 1988 Constitution, 26 states + Federal District, mandatory voting for 18–70.' },
+    { emoji: '⚖️', title: 'TSE &amp; TREs', summary: 'Superior Electoral Court (TSE) oversees national elections. Regional Electoral Courts (TREs) handle state-level.' },
+    { emoji: '🗳️', title: 'Types of Elections', summary: 'Federal (President, Congress), State (Governor, Assembly), Municipal (Mayor, Council). Two-round system for executives.' },
+    { emoji: '📋', title: 'Voter Registration', summary: 'Mandatory enrollment at 18. Title de eleitor (voter card). Biometric registration expanding nationwide.' },
+    { emoji: '🖲️', title: 'Electronic Voting', summary: 'Urna eletrônica since 1996. Fully electronic, no paper trail controversy. TSE conducts public security audits.' },
+    { emoji: '📅', title: 'Election Calendar', summary: 'First Sunday of October (first round), last Sunday (runoff if needed). Municipal elections in even non-presidential years.' },
+    { emoji: '💰', title: 'Campaign Finance', summary: 'Public fund (Fundo Eleitoral), corporate donations banned since 2015. TSE monitors spending in real time.' },
+    { emoji: '📊', title: 'Party System', summary: '30+ registered parties. Coalition-building essential. Federations and party switching rules (fidelidade partidária).' },
+    { emoji: '🏆', title: 'Post-Election', summary: 'TSE certifies results. Transition period. President inaugurated January 1 in Brasília.' },
+    { emoji: '📖', title: 'Key Legislation', summary: 'Electoral Code, Lei das Eleições (Law 9.504/97), Clean Record Law (Ficha Limpa), Mini Electoral Reform.' },
+  ],
+&nbsp;
+  pakistan: [
+    { emoji: '🏛️', title: 'Parliamentary Democracy', summary: 'Federal parliamentary republic, 1973 Constitution, bicameral parliament (National Assembly + Senate).' },
+    { emoji: '⚖️', title: 'Election Commission of Pakistan', summary: 'Constitutional body led by the Chief Election Commissioner. Conducts delimitation, voter rolls, election management.' },
+    { emoji: '🗳️', title: 'Types of Elections', summary: 'National Assembly (272 general + 60 women + 10 minorities), Provincial Assemblies, Senate (indirect), Local Bodies.' },
+    { emoji: '📋', title: 'Voter Registration', summary: 'CNIC-based voter registration. ECP maintains electoral rolls. NADRA assists with biometric verification.' },
+    { emoji: '📅', title: 'Election Timeline', summary: 'Dissolution → 60-day window → ECP schedule → nominations → scrutiny → campaign → polling → results → government formation.' },
+    { emoji: '📝', title: 'Ballot &amp; Symbol System', summary: 'Paper ballots with party symbols. Symbols assigned by ECP. Critical for voter identification in semi-literate areas.' },
+    { emoji: '🛡️', title: 'Security Arrangements', summary: 'Military and paramilitary deployed at sensitive stations. Rangers assist in urban areas. CCTV monitoring expanding.' },
+    { emoji: '📜', title: 'Code of Conduct', summary: 'ECP enforces election code. Restrictions on government resources use. Media monitoring for fair coverage.' },
+    { emoji: '🏆', title: 'Post-Election', summary: 'Returning Officers declare winners. Election Tribunals handle disputes. PM elected by National Assembly majority.' },
+    { emoji: '📖', title: 'Key Legislation', summary: 'Elections Act 2017, Political Parties Order 2002, Senate Elections Act, 25th Amendment (FATA merger).' },
+  ],
+&nbsp;
+  nigeria: [
+    { emoji: '🏛️', title: 'Federal Republic', summary: 'Presidential system, 1999 Constitution (4th Republic), 36 states + FCT, federal character principle.' },
+    { emoji: '⚖️', title: 'INEC', summary: 'Independent National Electoral Commission. Administers federal, state, and area council elections across Nigeria.' },
+    { emoji: '🗳️', title: 'Types of Elections', summary: 'Presidential, National Assembly (Senate + House), Gubernatorial, State Assembly, Local Government.' },
+    { emoji: '📋', title: 'Voter Registration', summary: 'Continuous Voter Registration (CVR). Permanent Voter Card (PVC) with biometrics required. Online pre-registration available.' },
+    { emoji: '📅', title: 'Election Timeline', summary: 'INEC timetable → party primaries → campaigns → election day → collation → results → tribunals → inauguration.' },
+    { emoji: '🖲️', title: 'BVAS Technology', summary: 'Bimodal Voter Accreditation System for fingerprint/facial verification. IReV portal for real-time result uploads.' },
+    { emoji: '🗓️', title: 'Staggered Elections', summary: 'Presidential and National Assembly held 2 weeks before Gubernatorial and State Assembly elections.' },
+    { emoji: '📜', title: '25% Rule', summary: 'Presidential winner must get 25% of votes in at least 2/3 of 36 states + FCT. Unique geographic spread requirement.' },
+    { emoji: '🏆', title: 'Election Disputes', summary: 'Election Petition Tribunal (21-day filing window). Appeals to Court of Appeal, then Supreme Court (final).' },
+    { emoji: '📖', title: 'Key Legislation', summary: 'Electoral Act 2022, 1999 Constitution, INEC regulations, Political Parties Finance Act.' },
+  ],
+&nbsp;
+  bangladesh: [
+    { emoji: '🏛️', title: 'Parliamentary Democracy', summary: 'Unitary parliamentary republic, 1972 Constitution, Jatiya Sangsad (300 directly elected + 50 reserved women seats).' },
+    { emoji: '⚖️', title: 'Election Commission', summary: 'Constitutional body headed by Chief Election Commissioner. Manages voter rolls, polling logistics, and election disputes.' },
+    { emoji: '🗳️', title: 'Types of Elections', summary: 'National Parliament (Jatiya Sangsad), Local Government (Union Parishad, Upazila, City Corporation, Municipality).' },
+    { emoji: '📋', title: 'Voter Registration', summary: 'National voter ID card with photo. EC maintains digital voter database. Registration drives before elections.' },
+    { emoji: '📅', title: 'Election Process', summary: 'Parliament dissolved → Interim/Caretaker arrangement → EC schedule → nominations → campaigns → polling → results.' },
+    { emoji: '📝', title: 'Ballot System', summary: 'Paper ballots with party symbols. Stamp-based marking. Manual counting at polling centres.' },
+    { emoji: '🛡️', title: 'Security &amp; Oversight', summary: 'Military and RAB deployment at sensitive centres. National and international observers monitor the process.' },
+    { emoji: '📜', title: 'Caretaker System', summary: 'Historically, a non-partisan caretaker government oversaw elections (1996–2011). Now a contentious political issue.' },
+    { emoji: '🏆', title: 'Government Formation', summary: 'Party with majority forms government. PM appointed by President from among parliament members.' },
+    { emoji: '📖', title: 'Key Legislation', summary: 'Representation of the People Order 1972, Election Commission Rules, Local Government Acts.' },
+  ],
+&nbsp;
+  japan: [
+    { emoji: '🏛️', title: 'Constitutional Monarchy', summary: 'Parliamentary system, 1947 Constitution (Article 9), Emperor as ceremonial head, bicameral National Diet.' },
+    { emoji: '⚖️', title: 'Election Administration', summary: 'Ministry of Internal Affairs oversees. Prefectural and municipal election commissions manage polling. Strict neutrality rules.' },
+    { emoji: '🗳️', title: 'Types of Elections', summary: 'House of Representatives (465 seats, mixed-member), House of Councillors (248 seats), Prefectural/Municipal.' },
+    { emoji: '📋', title: 'Voter Registration', summary: 'Automatic registration from resident registry at age 18. Postcard notification sent before election. No voter ID required at polls.' },
+    { emoji: '📅', title: 'Election Timeline', summary: 'Dissolution (HoR) → 40-day window → 12-day campaign → election day (Sunday) → counting → PM election by Diet.' },
+    { emoji: '📝', title: 'Mixed-Member System', summary: '289 single-member constituencies (FPTP) + 176 proportional seats (11 regional blocs, D\'Hondt method).' },
+    { emoji: '📢', title: 'Campaign Rules', summary: 'Strict 12-day limit. Sound trucks, designated poster boards, NHK broadcasts. Door-to-door canvassing prohibited.' },
+    { emoji: '💰', title: 'Political Funding', summary: 'Public subsidies to parties. Political Fund Control Law. Recent scandals prompted reform discussions.' },
+    { emoji: '🏆', title: 'Government Formation', summary: 'Diet elects PM from among its members. Coalition governments common. Cabinet appointed by PM.' },
+    { emoji: '📖', title: 'Key Legislation', summary: 'Public Offices Election Act, Political Funds Control Act, National Referendum Act.' },
+  ],
+&nbsp;
+  mexico: [
+    { emoji: '🏛️', title: 'Federal Republic', summary: 'Presidential system, 1917 Constitution, 31 states + Mexico City, separation of powers.' },
+    { emoji: '⚖️', title: 'INE', summary: 'National Electoral Institute (INE) — autonomous body administering federal elections. Local institutes (OPLE) for state elections.' },
+    { emoji: '🗳️', title: 'Types of Elections', summary: 'Federal: President (6-year, no re-election), Senate (128), Chamber of Deputies (500). State/Municipal elections.' },
+    { emoji: '📋', title: 'Voter Registration', summary: 'INE voter credential (credencial para votar) serves as primary national ID. Automatic enrollment at 18.' },
+    { emoji: '📅', title: 'Election Calendar', summary: 'First Sunday of June. Presidential every 6 years. Congress every 3 years. Concurrent state elections increasingly common.' },
+    { emoji: '📝', title: 'Paper Ballot System', summary: 'Paper ballots hand-counted at each polling station (casilla). Citizens randomly selected as poll workers (funcionarios de casilla).' },
+    { emoji: '📊', title: 'PREP &amp; Quick Count', summary: 'INE\'s Preliminary Results Program (PREP) provides rapid unofficial results. Statistical quick count for early projections.' },
+    { emoji: '💰', title: 'Campaign Finance', summary: 'Public financing dominant. Strict spending limits. INE monitors media time allocation. Corporate donations banned.' },
+    { emoji: '🏆', title: 'TEPJF &amp; Disputes', summary: 'Electoral Tribunal (TEPJF) resolves challenges. Can annul elections. Final authority on presidential election validity.' },
+    { emoji: '📖', title: 'Key Legislation', summary: 'LGIPE (General Law of Electoral Institutions), LGPP (Law of Political Parties), 2014 Electoral Reform.' },
+  ],
+&nbsp;
+  philippines: [
+    { emoji: '🏛️', title: 'Presidential Republic', summary: '1987 Constitution, presidential system, bicameral Congress (Senate + House), unitary government with autonomous regions.' },
+    { emoji: '⚖️', title: 'COMELEC', summary: 'Commission on Elections — constitutional body administering all elections. Enforces election laws and resolves disputes.' },
+    { emoji: '🗳️', title: 'Types of Elections', summary: 'National: President, VP, Senators (12), House (district + party-list). Local: Governor, Mayor, Council every 3 years.' },
+    { emoji: '📋', title: 'Voter Registration', summary: 'Biometric voter registration. Voters\' ID optional. National ID now accepted. Registration periods set by COMELEC.' },
+    { emoji: '📅', title: 'Election Calendar', summary: 'Second Monday of May. Synchronized national and local elections every 3 years (presidential every 6).' },
+    { emoji: '🖲️', title: 'Automated Election System', summary: 'Vote Counting Machines (VCMs) with paper ballot backup. Electronic transmission to canvassing centres.' },
+    { emoji: '📢', title: 'Campaign Rules', summary: '90-day national campaign, 45-day local. Spending limits. COMELEC regulates political ads and social media.' },
+    { emoji: '🔫', title: 'Gun Ban Period', summary: 'COMELEC implements election gun ban 6 months before and after elections. Checkpoints nationwide.' },
+    { emoji: '🏆', title: 'Canvassing &amp; Proclamation', summary: 'Congress canvasses president/VP. COMELEC for senators. Provincial/City boards for local positions.' },
+    { emoji: '📖', title: 'Key Legislation', summary: 'Omnibus Election Code, Republic Act 9369 (Automation), Party-List System Act, Fair Elections Act.' },
+  ],
+};
+&nbsp;
+export default TOPICS_BY_COUNTRY;
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-05-03T10:28:46.116Z
+            </div>
+        <script src="../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
+    </body>
+</html>
+    

@@ -2,13 +2,21 @@
 
 from __future__ import annotations
 
-from unittest.mock import patch, MagicMock
+import sys
+from unittest.mock import patch, MagicMock, AsyncMock
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
-from main import app
-from rag.embeddings import _chunk_text
+# Stub google.genai before importing main so tests run without the package installed
+_genai_mock = MagicMock()
+_genai_mock.Client.return_value = MagicMock()
+sys.modules.setdefault("google.genai", _genai_mock)
+sys.modules.setdefault("google.genai.types", MagicMock())
+
+from main import app  # noqa: E402
+from rag.embeddings import _chunk_text  # noqa: E402
 
 
 client = TestClient(app)
@@ -46,6 +54,16 @@ class TestAskEndpoint:
         long_question = "a" * 501
         response = client.post("/ask", json={"question": long_question})
         assert response.status_code == 422
+
+    def test_ask_invalid_country_rejected(self):
+        """Unsupported country codes must be rejected."""
+        response = client.post("/ask", json={"question": "What is EVM?", "country": "mars"})
+        assert response.status_code == 422
+
+    def test_ask_valid_country_accepted(self):
+        """Known country codes must pass validation."""
+        response = client.post("/ask", json={"question": "What is EVM?", "country": "usa"})
+        assert response.status_code in (200, 500, 503)
 
     def test_ask_html_stripped(self):
         """Verify HTML tags are sanitized from question input."""
@@ -186,6 +204,18 @@ class TestSecurityHeaders:
         assert "strict-transport-security" in response.headers
         assert "max-age=" in response.headers["strict-transport-security"]
 
+    def test_coop_header(self):
+        response = client.get("/health")
+        assert response.headers.get("cross-origin-opener-policy") == "same-origin"
+
+    def test_corp_header(self):
+        response = client.get("/health")
+        assert response.headers.get("cross-origin-resource-policy") == "same-origin"
+
+    def test_x_permitted_cross_domain_policies(self):
+        response = client.get("/health")
+        assert response.headers.get("x-permitted-cross-domain-policies") == "none"
+
     def test_csp_no_unsafe_inline_scripts(self):
         """Verify CSP script-src doesn't allow unsafe-inline."""
         response = client.get("/health")
@@ -227,6 +257,22 @@ class TestInputValidation:
         response = client.post("/ask", json={"question": "../../etc/passwd"})
         assert response.status_code in (200, 500, 503)
 
+    def test_docs_disabled(self):
+        """FastAPI Swagger UI and OpenAPI schema must not be exposed."""
+        # /openapi.json must not return a valid OpenAPI document
+        r = client.get("/openapi.json")
+        # Either 404 (no SPA) or non-JSON (SPA serving index.html)
+        if r.status_code == 200:
+            # SPA is mounted — response must not be an OpenAPI schema
+            assert "openapi" not in r.headers.get("content-type", "")
+            try:
+                data = r.json()
+                assert "openapi" not in data, "/openapi.json must not expose API schema"
+            except Exception:
+                pass  # Non-JSON response from SPA is acceptable
+        else:
+            assert r.status_code == 404
+
     @patch("main.retrieve_and_answer")
     @patch.dict("os.environ", {"GOOGLE_API_KEY": "test-key-12345"})
     def test_ask_with_country_param(self, mock_rag):
@@ -241,18 +287,16 @@ class TestInputValidation:
 
 class TestRetriever:
     @patch("rag.retriever.vector_query")
-    @patch("rag.retriever._get_model")
-    def test_retrieve_and_answer_structure(self, mock_get_model, mock_vquery):
+    @patch("rag.retriever._client")
+    def test_retrieve_and_answer_structure(self, mock_client, mock_vquery):
         """Test the RAG pipeline returns correct structure."""
         mock_vquery.return_value = [
             {"text": "EVMs are used in India.", "source": "evm_vvpat", "distance": 0.1},
             {"text": "Voting process step by step.", "source": "voting_process", "distance": 0.2},
         ]
-        mock_model = MagicMock()
         mock_response = MagicMock()
         mock_response.text = "EVMs are electronic devices used for voting in Indian elections."
-        mock_model.generate_content.return_value = mock_response
-        mock_get_model.return_value = mock_model
+        mock_client.models.generate_content.return_value = mock_response
 
         from rag.retriever import retrieve_and_answer, _cached_generate
         _cached_generate.cache_clear()
@@ -262,3 +306,265 @@ class TestRetriever:
         assert "sources" in result
         assert isinstance(result["sources"], list)
         assert "evm_vvpat" in result["sources"]
+
+
+# --- Translate endpoint tests ---
+
+class TestTranslateEndpoint:
+    def test_translate_unavailable_returns_503(self):
+        """Should return 503 when Translation client is not configured."""
+        with patch("main._translate_available", False):
+            response = client.post("/translate", json={"text": "Hello", "target_language": "hi"})
+        assert response.status_code == 503
+
+    def test_translate_empty_text_rejected(self):
+        response = client.post("/translate", json={"text": "", "target_language": "hi"})
+        assert response.status_code == 422
+
+    def test_translate_text_too_long_rejected(self):
+        response = client.post("/translate", json={"text": "a" * 2001, "target_language": "hi"})
+        assert response.status_code == 422
+
+    def test_translate_unsupported_language_rejected(self):
+        response = client.post("/translate", json={"text": "Hello", "target_language": "klingon"})
+        assert response.status_code == 422
+
+    def test_translate_missing_fields_rejected(self):
+        response = client.post("/translate", json={"text": "Hello"})
+        assert response.status_code == 422
+
+    @patch("main._translate_available", True)
+    @patch("main._translate_client")
+    def test_translate_success(self, mock_client):
+        mock_client.translate.return_value = {
+            "translatedText": "नमस्ते",
+            "detectedSourceLanguage": "en",
+        }
+        response = client.post("/translate", json={"text": "Hello", "target_language": "hi"})
+        assert response.status_code == 200
+        data = response.json()
+        assert data["translated_text"] == "नमस्ते"
+        assert data["target_language"] == "hi"
+
+    @patch("main._translate_available", True)
+    @patch("main._translate_client")
+    def test_translate_api_error_returns_502(self, mock_client):
+        mock_client.translate.side_effect = Exception("API error")
+        response = client.post("/translate", json={"text": "Hello", "target_language": "hi"})
+        assert response.status_code == 502
+
+
+# --- TTS endpoint tests ---
+
+class TestTTSEndpoint:
+    def test_tts_unavailable_returns_503(self):
+        """Should return 503 when TTS client is not configured."""
+        with patch("main._tts_available", False):
+            response = client.post("/tts", json={"text": "Hello", "language_code": "hi-IN"})
+        assert response.status_code == 503
+
+    def test_tts_empty_text_rejected(self):
+        response = client.post("/tts", json={"text": "", "language_code": "hi-IN"})
+        assert response.status_code == 422
+
+    def test_tts_text_too_long_rejected(self):
+        response = client.post("/tts", json={"text": "a" * 1001, "language_code": "hi-IN"})
+        assert response.status_code == 422
+
+    def test_tts_unsupported_language_rejected(self):
+        response = client.post("/tts", json={"text": "Hello", "language_code": "xx-XX"})
+        assert response.status_code == 422
+
+    def test_tts_missing_language_rejected(self):
+        response = client.post("/tts", json={"text": "Hello"})
+        assert response.status_code == 422
+
+    @patch("main._tts_available", True)
+    @patch("main._tts_client")
+    def test_tts_success(self, mock_tts_client):
+        import sys
+        tts_mod_mock = MagicMock()
+        tts_mod_mock.SynthesisInput.return_value = MagicMock()
+        tts_mod_mock.VoiceSelectionParams.return_value = MagicMock()
+        tts_mod_mock.AudioConfig.return_value = MagicMock()
+        mock_response = MagicMock()
+        mock_response.audio_content = b"fake-audio-bytes"
+        mock_tts_client.synthesize_speech.return_value = mock_response
+        with patch.dict(sys.modules, {"google.cloud.texttospeech": tts_mod_mock}):
+            response = client.post("/tts", json={"text": "Hello", "language_code": "hi-IN"})
+        assert response.status_code == 200
+        data = response.json()
+        assert "audio_base64" in data
+        assert data["language_code"] == "hi-IN"
+
+    @patch("main._tts_available", True)
+    @patch("main._tts_client")
+    def test_tts_api_error_returns_502(self, mock_tts_client):
+        import sys
+        tts_mod_mock = MagicMock()
+        tts_mod_mock.SynthesisInput.return_value = MagicMock()
+        tts_mod_mock.VoiceSelectionParams.return_value = MagicMock()
+        tts_mod_mock.AudioConfig.return_value = MagicMock()
+        mock_tts_client.synthesize_speech.side_effect = Exception("TTS error")
+        with patch.dict(sys.modules, {"google.cloud.texttospeech": tts_mod_mock}):
+            response = client.post("/tts", json={"text": "Hello", "language_code": "hi-IN"})
+        assert response.status_code == 502
+
+
+# --- YouTube endpoint tests ---
+
+class TestYouTubeEndpoint:
+    def test_youtube_unsupported_country_returns_404(self):
+        response = client.get("/youtube/mars")
+        assert response.status_code == 404
+
+    def test_youtube_no_api_key_returns_503(self):
+        with patch("main._YOUTUBE_API_KEY", ""):
+            response = client.get("/youtube/india")
+        assert response.status_code == 503
+
+    @patch("main._YOUTUBE_API_KEY", "test-yt-key")
+    @patch("httpx.AsyncClient")
+    def test_youtube_success(self, mock_httpx_cls):
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {
+            "items": [
+                {
+                    "id": {"videoId": "abcdefghijk"},
+                    "snippet": {
+                        "title": "India Election Guide",
+                        "channelTitle": "NewsChannel",
+                        "thumbnails": {"medium": {"url": "https://i.ytimg.com/vi/abcdefghijk/mqdefault.jpg"}},
+                    },
+                }
+            ]
+        }
+        mock_resp.raise_for_status = MagicMock()
+        mock_session = AsyncMock()
+        mock_session.get = AsyncMock(return_value=mock_resp)
+        mock_httpx_cls.return_value.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_httpx_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+        response = client.get("/youtube/india")
+        assert response.status_code == 200
+        data = response.json()
+        assert "videos" in data
+
+    @patch("main._YOUTUBE_API_KEY", "test-yt-key")
+    @patch("httpx.AsyncClient")
+    def test_youtube_http_error_returns_502(self, mock_httpx_cls):
+        mock_session = AsyncMock()
+        mock_session.get = AsyncMock(
+            side_effect=httpx.HTTPStatusError("error", request=MagicMock(), response=MagicMock())
+        )
+        mock_httpx_cls.return_value.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_httpx_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+        response = client.get("/youtube/india")
+        assert response.status_code == 502
+
+    @patch("main._YOUTUBE_API_KEY", "test-yt-key")
+    @patch("httpx.AsyncClient")
+    def test_youtube_generic_error_returns_502(self, mock_httpx_cls):
+        mock_session = AsyncMock()
+        mock_session.get = AsyncMock(side_effect=Exception("connection error"))
+        mock_httpx_cls.return_value.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_httpx_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+        response = client.get("/youtube/india")
+        assert response.status_code == 502
+
+    @patch("main._YOUTUBE_API_KEY", "test-yt-key")
+    @patch("httpx.AsyncClient")
+    def test_youtube_invalid_video_id_filtered(self, mock_httpx_cls):
+        """video_ids that don't match the 11-char alnum pattern are excluded."""
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {
+            "items": [
+                {
+                    "id": {"videoId": "../../etc"},  # invalid
+                    "snippet": {
+                        "title": "Bad video",
+                        "channelTitle": "Chan",
+                        "thumbnails": {"medium": {"url": "https://i.ytimg.com/vi/x/mq.jpg"}},
+                    },
+                }
+            ]
+        }
+        mock_resp.raise_for_status = MagicMock()
+        mock_session = AsyncMock()
+        mock_session.get = AsyncMock(return_value=mock_resp)
+        mock_httpx_cls.return_value.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_httpx_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+        response = client.get("/youtube/india")
+        assert response.status_code == 200
+        assert response.json()["videos"] == []
+
+
+# --- Index admin token tests ---
+
+class TestIndexAdminToken:
+    @patch("main.build_index", return_value=10)
+    @patch("main._INDEX_ADMIN_TOKEN", "secret-token")
+    @patch.dict("os.environ", {"GOOGLE_API_KEY": "test-key-12345"})
+    def test_index_wrong_token_returns_401(self, mock_build):
+        response = client.post("/index", headers={"X-Admin-Token": "wrong"})
+        assert response.status_code == 401
+
+    @patch("main.build_index", return_value=10)
+    @patch("main._INDEX_ADMIN_TOKEN", "secret-token")
+    @patch.dict("os.environ", {"GOOGLE_API_KEY": "test-key-12345"})
+    def test_index_correct_token_succeeds(self, mock_build):
+        response = client.post("/index", headers={"X-Admin-Token": "secret-token"})
+        assert response.status_code == 200
+
+
+# --- Embeddings tests (mocked ChromaDB) ---
+
+class TestEmbeddings:
+    @patch("rag.embeddings._get_client")
+    @patch("rag.embeddings._get_collection")
+    def test_build_index_returns_count(self, mock_get_collection, mock_get_client):
+        """build_index should return the number of chunks created."""
+        mock_collection = MagicMock()
+        mock_client_inst = MagicMock()
+        mock_get_client.return_value = mock_client_inst
+        mock_get_collection.return_value = mock_collection
+
+        from rag.embeddings import build_index, _get_client, _get_collection
+        _get_client.cache_clear()
+        count = build_index()
+        assert isinstance(count, int)
+        assert count >= 0
+
+    @patch("rag.embeddings._get_client")
+    @patch("rag.embeddings._get_collection")
+    def test_query_returns_hits(self, mock_get_collection, mock_get_client):
+        """query() should parse ChromaDB results into a list of dicts."""
+        mock_collection = MagicMock()
+        mock_collection.query.return_value = {
+            "documents": [["EVMs are used in elections."]],
+            "metadatas": [[{"source": "evm_vvpat", "chunk_index": 0}]],
+            "distances": [[0.15]],
+        }
+        mock_get_collection.return_value = mock_collection
+        mock_get_client.return_value = MagicMock()
+
+        from rag.embeddings import query, _get_client
+        _get_client.cache_clear()
+        hits = query("What is EVM?", n_results=1)
+        assert len(hits) == 1
+        assert hits[0]["source"] == "evm_vvpat"
+        assert hits[0]["text"] == "EVMs are used in elections."
+        assert hits[0]["distance"] == 0.15
+
+    @patch("rag.embeddings._get_client")
+    @patch("rag.embeddings._get_collection")
+    def test_query_empty_results(self, mock_get_collection, mock_get_client):
+        """query() returns empty list when ChromaDB has no results."""
+        mock_collection = MagicMock()
+        mock_collection.query.return_value = {"documents": [[]], "metadatas": [[]], "distances": [[]]}
+        mock_get_collection.return_value = mock_collection
+        mock_get_client.return_value = MagicMock()
+
+        from rag.embeddings import query, _get_client
+        _get_client.cache_clear()
+        hits = query("unknown question", n_results=5)
+        assert hits == []

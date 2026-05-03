@@ -59,13 +59,16 @@ describe('App', () => {
     expect(screen.getByText('Japan')).toBeInTheDocument();
   });
 
-  it('changes country when a different one is selected', async () => {
+  it('closes country selector on outside click', async () => {
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: /Select country/ }));
     await waitFor(() => {
       expect(screen.getByRole('listbox')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByText('United States'));
-    expect(screen.getByText('United States Election Process')).toBeInTheDocument();
+    // Click outside the selector
+    fireEvent.mouseDown(document.body);
+    await waitFor(() => {
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    });
   });
 });

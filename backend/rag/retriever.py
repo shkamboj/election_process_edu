@@ -5,12 +5,13 @@ from __future__ import annotations
 import os
 from functools import lru_cache
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 from .embeddings import query as vector_query
 
-# Configure Gemini once at module level
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY", ""))
+# Configure Gemini client once at module level
+_client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY", ""))
 
 COUNTRY_NAMES = {
     "india": "India",
@@ -35,34 +36,29 @@ Rules:
 - When relevant, mention official election body websites or helplines for {country}.
 """
 
-_models: dict = {}
 
-
-def _get_model(country: str):
-    """Get or create a model for a given country."""
-    if country not in _models:
-        country_name = COUNTRY_NAMES.get(country, country.title())
-        _models[country] = genai.GenerativeModel(
-            model_name="gemini-2.0-flash",
-            system_instruction=_BASE_SYSTEM_PROMPT.format(country=country_name),
-            generation_config=genai.GenerationConfig(
-                temperature=0.3,
-                max_output_tokens=1024,
-            ),
-        )
-    return _models[country]
+def _make_config(country: str) -> types.GenerateContentConfig:
+    country_name = COUNTRY_NAMES.get(country, country.title())
+    return types.GenerateContentConfig(
+        system_instruction=_BASE_SYSTEM_PROMPT.format(country=country_name),
+        temperature=0.3,
+        max_output_tokens=1024,
+    )
 
 
 @lru_cache(maxsize=128)
 def _cached_generate(question: str, context_text: str, country: str) -> str:
     """Cache Gemini responses for identical question+context+country."""
     prompt = f"Context from knowledge base:\n\n{context_text}\n\n---\n\nUser question: {question}"
-    model = _get_model(country)
-    response = model.generate_content(prompt)
+    response = _client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt,
+        config=_make_config(country),
+    )
     return response.text
 
 
-def retrieve_and_answer(question: str, country: str = "india") -> dict:
+def retrieve_and_answer(question: str, country: str = "india") -> dict[str, str | list[str]]:
     """Retrieve relevant context from the knowledge base and generate an answer."""
     hits = vector_query(question, n_results=5)
     context_text = "\n\n---\n\n".join(h["text"] for h in hits)

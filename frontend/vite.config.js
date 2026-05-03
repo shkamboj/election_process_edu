@@ -14,6 +14,9 @@ export default defineConfig({
       '/ask': 'http://localhost:8000',
       '/index': 'http://localhost:8000',
       '/health': 'http://localhost:8000',
+      '/translate': 'http://localhost:8000',
+      '/tts': 'http://localhost:8000',
+      '/youtube': 'http://localhost:8000',
     },
   },
 });

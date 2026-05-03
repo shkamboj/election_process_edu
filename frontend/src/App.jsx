@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import COUNTRIES from './data/countries';
+import { trackCountryChanged, trackTabChanged } from './utils/analytics';
 
 const Chat = lazy(() => import('./components/Chat'));
 const Timeline = lazy(() => import('./components/ElectionTimeline'));
@@ -92,7 +93,11 @@ export default function App() {
                       className={`flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-gray-50 transition-colors ${
                         c.id === country.id ? 'font-semibold bg-gray-50' : ''
                       }`}
-                      onClick={() => { setCountry(c); setSelectorOpen(false); }}
+                      onClick={() => {
+                        trackCountryChanged(country.id, c.id);
+                        setCountry(c);
+                        setSelectorOpen(false);
+                      }}
                     >
                       <span aria-hidden="true">{c.flag}</span>
                       <span>{c.name}</span>
@@ -108,7 +113,6 @@ export default function App() {
               {TABS.map((t) => (
                 <button
                   key={t}
-                  onClick={() => setTab(t)}
                   role="tab"
                   aria-selected={tab === t}
                   aria-controls={`tabpanel-${t}`}
@@ -119,6 +123,7 @@ export default function App() {
                       : 'bg-white/70 text-gray-700 hover:bg-white'
                   }`}
                   style={tab === t ? { backgroundColor: country.accent, '--tw-ring-color': country.accent } : { '--tw-ring-color': country.accent }}
+                  onClick={() => { trackTabChanged(t); setTab(t); }}
                 >
                   {t}
                 </button>

@@ -1,7 +1,48 @@
 import { memo } from 'react';
+import PropTypes from 'prop-types';
 import TIMELINES from '../data/timelines';
+import YouTubeVideos from './YouTubeVideos';
 
-export default memo(function ElectionTimeline({ country }) {
+const MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+
+function CountryMap({ country }) {
+  const src = MAPS_API_KEY
+    ? `https://www.google.com/maps/embed/v1/place?key=${MAPS_API_KEY}&q=${encodeURIComponent(country.mapQuery)}&zoom=4`
+    : `https://maps.google.com/maps?q=${encodeURIComponent(country.mapQuery)}&z=4&output=embed`;
+
+  return (
+    <div className="mb-8 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+      <div className="px-4 py-2 flex items-center gap-2 bg-gray-50 border-b border-gray-200">
+        <span aria-hidden="true">🗺️</span>
+        <span className="text-sm font-medium text-gray-700">{country.name} - Google Maps</span>
+      </div>
+      <iframe
+        title={`Map of ${country.name}`}
+        src={src}
+        width="100%"
+        height="320"
+        style={{ border: 0, display: 'block' }}
+        allowFullScreen
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        aria-label={`Interactive Google Map showing ${country.name}`}
+      />
+    </div>
+  );
+}
+
+const countryShape = PropTypes.shape({
+  id: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  accent: PropTypes.string.isRequired,
+  mapQuery: PropTypes.string.isRequired,
+});
+
+CountryMap.propTypes = {
+  country: countryShape.isRequired,
+};
+
+function ElectionTimeline({ country }) {
   const steps = TIMELINES[country.id] || TIMELINES.india;
 
   return (
@@ -9,6 +50,8 @@ export default memo(function ElectionTimeline({ country }) {
       <h2 className="text-lg font-bold mb-6" style={{ color: country.accent }}>
         {country.name} Election Timeline
       </h2>
+
+      <CountryMap country={country} />
 
       <ol className="relative list-none p-0" role="list">
         <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200" aria-hidden="true"></div>
@@ -43,6 +86,14 @@ export default memo(function ElectionTimeline({ country }) {
           </li>
         ))}
       </ol>
+
+      <YouTubeVideos country={country} />
     </section>
   );
-});
+}
+
+ElectionTimeline.propTypes = {
+  country: countryShape.isRequired,
+};
+
+export default memo(ElectionTimeline);

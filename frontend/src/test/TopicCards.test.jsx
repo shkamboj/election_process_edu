@@ -35,4 +35,14 @@ describe('TopicCards', () => {
     render(<TopicCards country={INDIA} />);
     expect(screen.getByText(/India election process/)).toBeInTheDocument();
   });
+
+  it('renders topic count for both countries', () => {
+    const { unmount } = render(<TopicCards country={INDIA} />);
+    const indiaCards = screen.getAllByRole('listitem');
+    expect(indiaCards.length).toBeGreaterThan(0);
+    unmount();
+    render(<TopicCards country={USA} />);
+    const usaCards = screen.getAllByRole('listitem');
+    expect(usaCards.length).toBeGreaterThan(0);
+  });
 });
