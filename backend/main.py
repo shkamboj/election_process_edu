@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import pathlib
 import re
@@ -10,6 +11,7 @@ import bleach
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, field_validator
@@ -18,6 +20,23 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 load_dotenv()
+
+# --- Logging ---
+try:
+    import google.cloud.logging as cloud_logging
+    cloud_client = cloud_logging.Client()
+    cloud_client.setup_logging()
+    logger = logging.getLogger(__name__)
+    logger.info("Google Cloud Logging initialised.")
+except Exception:
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    logger.info("Using standard logging (Google Cloud Logging not available).")
+
+# --- Startup environment validation ---
+_api_key = os.getenv("GOOGLE_API_KEY", "")
+if not _api_key or _api_key == "your-api-key-here":
+    logger.warning("GOOGLE_API_KEY is not configured. /ask and /index endpoints will return 503.")
 
 from rag.embeddings import build_index
 from rag.retriever import retrieve_and_answer
@@ -31,6 +50,7 @@ app = FastAPI(
     version="1.0.0",
 )
 app.state.limiter = limiter
+app.add_middleware(GZipMiddleware, minimum_size=500)
 
 
 # --- Security: rate limit error handler ---
@@ -48,15 +68,19 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline'; "
+        "script-src 'self' https://www.googletagmanager.com; "
         "style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data:; "
+        "img-src 'self' data: https://www.google-analytics.com; "
         "font-src 'self'; "
-        "connect-src 'self'; "
+        "connect-src 'self' https://www.google-analytics.com https://analytics.google.com; "
         "frame-ancestors 'none'"
     )
+    # Cache-Control for static assets
+    if request.url.path.startswith("/assets/"):
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
     return response
 
 
@@ -101,13 +125,18 @@ def health():
     return {"status": "ok"}
 
 
+def _check_api_key():
+    """Verify the Google API key is available."""
+    api_key = os.getenv("GOOGLE_API_KEY", "")
+    if not api_key or api_key == "your-api-key-here":
+        raise HTTPException(status_code=503, detail="Service temporarily unavailable. Please try again later.")
+
+
 @app.post("/index")
 @limiter.limit("5/minute")
 def index_knowledge(request: Request):
     """Rebuild the vector index from knowledge base files."""
-    api_key = os.getenv("GOOGLE_API_KEY", "")
-    if not api_key or api_key == "your-api-key-here":
-        raise HTTPException(status_code=500, detail="GOOGLE_API_KEY is not configured.")
+    _check_api_key()
     count = build_index()
     return {"indexed_chunks": count}
 
@@ -116,9 +145,7 @@ def index_knowledge(request: Request):
 @limiter.limit("20/minute")
 def ask(req: AskRequest, request: Request):
     """Answer a question about the Indian election process."""
-    api_key = os.getenv("GOOGLE_API_KEY", "")
-    if not api_key or api_key == "your-api-key-here":
-        raise HTTPException(status_code=500, detail="GOOGLE_API_KEY is not configured.")
+    _check_api_key()
     result = retrieve_and_answer(req.question)
     return AskResponse(**result)
 

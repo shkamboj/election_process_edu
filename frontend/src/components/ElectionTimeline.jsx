@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 const STEPS = [
   {
     phase: 'Pre-Election',
@@ -102,7 +104,7 @@ const STEPS = [
   },
 ];
 
-export default function ElectionTimeline() {
+export default memo(function ElectionTimeline() {
   return (
     <section aria-label="Election timeline">
       <h2 className="text-lg font-bold text-navy mb-6">
@@ -147,4 +149,4 @@ export default function ElectionTimeline() {
       </ol>
     </section>
   );
-}
+});

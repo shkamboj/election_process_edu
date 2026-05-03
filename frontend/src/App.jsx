@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 
 const Chat = lazy(() => import('./components/Chat'));
 const Timeline = lazy(() => import('./components/ElectionTimeline'));
@@ -17,6 +17,11 @@ function LoadingSpinner() {
 
 export default function App() {
   const [tab, setTab] = useState('Timeline');
+  const panelRef = useRef(null);
+
+  useEffect(() => {
+    panelRef.current?.focus();
+  }, [tab]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -66,7 +71,8 @@ export default function App() {
           role="tabpanel"
           id={`tabpanel-${tab}`}
           aria-labelledby={`tab-${tab}`}
-          tabIndex={0}
+          tabIndex={-1}
+          ref={panelRef}
         >
           <Suspense fallback={<LoadingSpinner />}>
             {tab === 'Ask' && <Chat />}
@@ -77,7 +83,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="text-center text-xs text-gray-400 py-3 border-t" role="contentinfo">
+      <footer className="text-center text-xs text-gray-500 py-3 border-t" role="contentinfo">
         Educational purposes only &middot; Data sourced from ECI, Constitution of India &middot; Not an official government resource
       </footer>
     </div>

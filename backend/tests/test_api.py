@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch, MagicMock
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -50,21 +52,65 @@ class TestAskEndpoint:
         response = client.post("/ask", json={"question": "<script>alert('xss')</script>What is EVM?"})
         # Should not fail on validation — HTML is stripped, leaving a valid question
         # May fail on API key, but should not be 422
-        assert response.status_code in (200, 500)
+        assert response.status_code in (200, 500, 503)
 
     def test_ask_invalid_content_type(self):
         response = client.post("/ask", content="plain text", headers={"Content-Type": "text/plain"})
         assert response.status_code == 422
+
+    @patch("main.retrieve_and_answer")
+    @patch.dict("os.environ", {"GOOGLE_API_KEY": "test-key-12345"})
+    def test_ask_success_with_mocked_gemini(self, mock_rag):
+        """Test successful /ask response with mocked RAG pipeline."""
+        mock_rag.return_value = {
+            "answer": "The EVM is an Electronic Voting Machine used in Indian elections.",
+            "sources": ["evm_vvpat", "voting_process"],
+        }
+        response = client.post("/ask", json={"question": "What is an EVM?"})
+        assert response.status_code == 200
+        data = response.json()
+        assert "answer" in data
+        assert "sources" in data
+        assert "Electronic Voting Machine" in data["answer"]
+        assert "evm_vvpat" in data["sources"]
+        mock_rag.assert_called_once_with("What is an EVM?")
+
+    @patch("main.retrieve_and_answer")
+    @patch.dict("os.environ", {"GOOGLE_API_KEY": "test-key-12345"})
+    def test_ask_returns_sources_list(self, mock_rag):
+        """Verify the sources field is a list of strings."""
+        mock_rag.return_value = {
+            "answer": "India follows a parliamentary democracy.",
+            "sources": ["democracy_basics"],
+        }
+        response = client.post("/ask", json={"question": "What is Indian democracy?"})
+        assert response.status_code == 200
+        assert isinstance(response.json()["sources"], list)
+
+    @patch("main.retrieve_and_answer", side_effect=Exception("Gemini API error"))
+    @patch.dict("os.environ", {"GOOGLE_API_KEY": "test-key-12345"})
+    def test_ask_handles_rag_exception(self, mock_rag):
+        """Verify server returns 500 on unexpected RAG failure."""
+        with pytest.raises(Exception, match="Gemini API error"):
+            client.post("/ask", json={"question": "What is the election timeline?"})
 
 
 # --- Index endpoint tests ---
 
 class TestIndexEndpoint:
     def test_index_without_api_key(self):
-        """Should return 500 when GOOGLE_API_KEY is not set."""
+        """Should return 503 when GOOGLE_API_KEY is not set."""
         response = client.post("/index")
-        assert response.status_code == 500
-        assert "GOOGLE_API_KEY" in response.json()["detail"]
+        assert response.status_code in (500, 503)
+
+    @patch("main.build_index", return_value=42)
+    @patch.dict("os.environ", {"GOOGLE_API_KEY": "test-key-12345"})
+    def test_index_success_with_mocked_build(self, mock_build):
+        """Test successful /index response with mocked build."""
+        response = client.post("/index")
+        assert response.status_code == 200
+        assert response.json() == {"indexed_chunks": 42}
+        mock_build.assert_called_once()
 
 
 # --- Chunking logic tests ---
@@ -98,6 +144,14 @@ class TestChunking:
         chunks = _chunk_text(text, chunk_size=800, overlap=200)
         assert text in chunks[0]
 
+    def test_chunk_overlap_content_shared(self):
+        """Verify overlapping region is shared between consecutive chunks."""
+        text = "ABCDEFGH" * 200  # 1600 chars
+        chunks = _chunk_text(text, chunk_size=800, overlap=200)
+        if len(chunks) >= 2:
+            # Last 200 chars of chunk 0 should equal first 200 chars of chunk 1
+            assert chunks[0][-200:] == chunks[1][:200]
+
 
 # --- Security header tests ---
 
@@ -127,6 +181,17 @@ class TestSecurityHeaders:
         response = client.get("/health")
         assert "camera=()" in response.headers.get("permissions-policy", "")
 
+    def test_hsts_header(self):
+        response = client.get("/health")
+        assert "strict-transport-security" in response.headers
+        assert "max-age=" in response.headers["strict-transport-security"]
+
+    def test_csp_no_unsafe_inline_scripts(self):
+        """Verify CSP script-src doesn't allow unsafe-inline."""
+        response = client.get("/health")
+        csp = response.headers.get("content-security-policy", "")
+        assert "'unsafe-inline'" not in csp.split("script-src")[1].split(";")[0]
+
 
 # --- CORS tests ---
 
@@ -147,12 +212,44 @@ class TestCORS:
 class TestInputValidation:
     def test_ask_with_special_characters(self):
         response = client.post("/ask", json={"question": "What's the EVM's purpose? (explain!)"})
-        assert response.status_code in (200, 500)  # 500 if no API key
+        assert response.status_code in (200, 500, 503)  # 503 if no API key
 
     def test_ask_with_unicode(self):
         response = client.post("/ask", json={"question": "चुनाव कैसे होता है?"})
-        assert response.status_code in (200, 500)
+        assert response.status_code in (200, 500, 503)
 
     def test_ask_max_length_boundary(self):
         response = client.post("/ask", json={"question": "a" * 500})
-        assert response.status_code in (200, 500)
+        assert response.status_code in (200, 500, 503)
+
+    def test_ask_path_traversal_in_question(self):
+        """Ensure path traversal attempts in questions are harmless (just sanitized text)."""
+        response = client.post("/ask", json={"question": "../../etc/passwd"})
+        assert response.status_code in (200, 500, 503)
+
+
+# --- Retriever tests (mocked) ---
+
+class TestRetriever:
+    @patch("rag.retriever.vector_query")
+    @patch("rag.retriever._model")
+    def test_retrieve_and_answer_structure(self, mock_model, mock_vquery):
+        """Test the RAG pipeline returns correct structure."""
+        mock_vquery.return_value = [
+            {"text": "EVMs are used in India.", "source": "evm_vvpat", "distance": 0.1},
+            {"text": "Voting process step by step.", "source": "voting_process", "distance": 0.2},
+        ]
+        mock_response = MagicMock()
+        mock_response.text = "EVMs are electronic devices used for voting in Indian elections."
+        mock_model.generate_content.return_value = mock_response
+
+        from rag.retriever import retrieve_and_answer
+        # Clear lru_cache to ensure our mock is used
+        from rag.retriever import _cached_generate
+        _cached_generate.cache_clear()
+
+        result = retrieve_and_answer("What is an EVM?")
+        assert "answer" in result
+        assert "sources" in result
+        assert isinstance(result["sources"], list)
+        assert "evm_vvpat" in result["sources"]

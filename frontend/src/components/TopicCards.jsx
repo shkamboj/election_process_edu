@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 const TOPICS = [
   {
     emoji: '🏛️',
@@ -61,11 +63,11 @@ const TOPICS = [
   },
 ];
 
-export default function TopicCards() {
+export default memo(function TopicCards() {
   return (
     <section aria-label="Election topics">
       <h2 className="text-lg font-bold text-navy mb-2">Explore Topics</h2>
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-gray-600 mb-6">
         Browse key topics about the Indian election process. Switch to the <strong>Ask</strong> tab
         to dive deeper into any topic.
       </p>
@@ -76,14 +78,13 @@ export default function TopicCards() {
             key={i}
             role="listitem"
             className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-saffron transition-all focus-within:ring-2 focus-within:ring-navy"
-            tabIndex={0}
             aria-label={t.title}
           >
             <div className="flex items-start gap-3">
               <span className="text-2xl" aria-hidden="true">{t.emoji}</span>
               <div>
                 <h3 className="font-semibold text-gray-800 text-sm">{t.title}</h3>
-                <p className="text-xs text-gray-500 mt-1 leading-relaxed">{t.summary}</p>
+                <p className="text-xs text-gray-600 mt-1 leading-relaxed">{t.summary}</p>
               </div>
             </div>
           </article>
@@ -91,4 +92,4 @@ export default function TopicCards() {
       </div>
     </section>
   );
-}
+});

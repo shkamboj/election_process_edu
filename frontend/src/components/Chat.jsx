@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 const SUGGESTIONS = [
@@ -10,7 +10,7 @@ const SUGGESTIONS = [
   'What is the Model Code of Conduct?',
 ];
 
-export default function Chat() {
+export default memo(function Chat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ export default function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  async function sendMessage(question) {
+  const sendMessage = useCallback(async function sendMessage(question) {
     const q = (question || input).trim();
     if (!q || loading) return;
 
@@ -53,19 +53,19 @@ export default function Chat() {
     } catch (err) {
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: `⚠️ Error: ${err.message}`, sources: [] },
+        { role: 'assistant', content: `⚠️ Error: ${err.message}`, sources: [], isError: true },
       ]);
     } finally {
       setLoading(false);
     }
-  }
+  }, [input, loading]);
 
-  function handleKeyDown(e) {
+  const handleKeyDown = useCallback(function handleKeyDown(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
-  }
+  }, [sendMessage]);
 
   return (
     <section className="flex flex-col h-[calc(100vh-180px)]" aria-label="Chat with election assistant">
@@ -98,6 +98,7 @@ export default function Chat() {
           <div
             key={i}
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            role={msg.isError ? 'alert' : undefined}
           >
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-3 ${
@@ -110,7 +111,7 @@ export default function Chat() {
                 <div className="prose text-sm">
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
                   {msg.sources?.length > 0 && (
-                    <p className="text-xs text-gray-400 mt-2 border-t pt-1">
+                    <p className="text-xs text-gray-500 mt-2 border-t pt-1">
                       Sources: {msg.sources.join(', ')}
                     </p>
                   )}
@@ -166,4 +167,4 @@ export default function Chat() {
       </form>
     </section>
   );
-}
+});

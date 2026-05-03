@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import pathlib
+from functools import lru_cache
 
 import chromadb
 from chromadb.utils import embedding_functions
@@ -12,6 +13,7 @@ KNOWLEDGE_DIR = pathlib.Path(__file__).resolve().parent.parent / "knowledge"
 CHROMA_DIR = pathlib.Path(__file__).resolve().parent.parent / "chroma_db"
 
 
+@lru_cache(maxsize=1)
 def _get_embedding_function():
     return embedding_functions.GoogleGenerativeAiEmbeddingFunction(
         api_key=os.getenv("GOOGLE_API_KEY", ""),
@@ -19,6 +21,7 @@ def _get_embedding_function():
     )
 
 
+@lru_cache(maxsize=1)
 def _get_client() -> chromadb.ClientAPI:
     return chromadb.PersistentClient(path=str(CHROMA_DIR))
 
